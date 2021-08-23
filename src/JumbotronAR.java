@@ -12,13 +12,20 @@ import java.awt.Insets;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import javax.swing.JMenuBar;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.awt.event.ActionEvent;
 
-public class JumbotronAR 
+public class JumbotronAR implements ActionListener 
 {
 	private JFrame frame;
+	long lastUpdate;
+	
+	Timer timer = new Timer(1000, this);
 	
      JLabel timer1 = new JLabel("00 : 00");
 		JLabel scoreHome = new JLabel("0");
@@ -27,9 +34,18 @@ public class JumbotronAR
 		long mp = 20000; 
 		Timer1 mytimer = new Timer1(ms, mp); 
 		private final JMenuBar menuBar = new JMenuBar();
-		private final JButton btnNewButton = new JButton("New button");
-		private final JButton btnNewButton_1 = new JButton("New button");
-		private final JButton btnNewButton_2 = new JButton("New button");
+		private final JButton btnNewButton = new JButton("Increment Home");
+		private final JButton btnNewButton_1 = new JButton("Decrement Home");
+		private final JButton btnNewButton_2 = new JButton("Increment Guest");
+		private final JButton btnDecrementGuest = new JButton("Decrement Guest");
+		private final JButton btnReset = new JButton("Reset Scores");
+		private final JButton btnStartTimer = new JButton("Start Timer");
+		private final JButton btnPauseTimer = new JButton("Pause Timer");
+		private final JButton btnResetTimer = new JButton("Reset Timer");
+		private final JButton btnmin = new JButton("+1min");
+		private final JButton btnmin_1 = new JButton("-1min");
+		private final JButton btnsec = new JButton("+5sec");
+		private final JButton btnsec_1 = new JButton("-5sec");
 	/**
 	 * Launch the application.
 	 */
@@ -55,13 +71,7 @@ public class JumbotronAR
 		initialize();
 		
 	    
-	}
-
-	public void add10min()
-	{
-		
-	}
-	
+	}	
 	
 	public void reset()
 	{
@@ -77,6 +87,15 @@ public class JumbotronAR
 		int score1 = 0; 
 		try
 		{
+			try {
+		        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/toronto_goal_horn_clip.wav").getAbsoluteFile());
+		        Clip clip = AudioSystem.getClip();
+		        clip.open(audioInputStream);
+		        clip.start();
+		    } catch(Exception ex) {
+		        System.out.println("Error with playing sound.");
+		        ex.printStackTrace();
+		    }
 			score1 = Integer.parseInt(score); 
 			score1++; 
 			score= String.valueOf(score1); 
@@ -111,6 +130,16 @@ public class JumbotronAR
 		int score1 = 0; 
 		try
 		{
+			
+			try {
+		        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/tampa_goal_horn_clip.wav").getAbsoluteFile());
+		        Clip clip = AudioSystem.getClip();
+		        clip.open(audioInputStream);
+		        clip.start();
+		    } catch(Exception ex) {
+		        System.out.println("Error with playing sound.");
+		        ex.printStackTrace();
+		    }
 			score1 = Integer.parseInt(score); 
 			score1++; 
 			score= String.valueOf(score1); 
@@ -144,12 +173,12 @@ public class JumbotronAR
 	 */
 	private void initialize() 
 	{
+		
+		
 		frame = new JFrame();
 		frame.getContentPane().setBackground(Color.DARK_GRAY);
 		frame.setBounds(100, 100, 1800, 1000);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-	
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{412, 552, 443, 0};
@@ -196,7 +225,6 @@ public class JumbotronAR
 		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
-		
 		timer1.setBackground(Color.DARK_GRAY);
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.fill = GridBagConstraints.VERTICAL;
@@ -207,7 +235,6 @@ public class JumbotronAR
 		timer1.setForeground(Color.WHITE);
 		timer1.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 250));
 		
-		
 		scoreHome.setVerticalAlignment(SwingConstants.TOP);
 		scoreHome.setForeground(Color.RED);
 		scoreHome.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 500));
@@ -217,7 +244,6 @@ public class JumbotronAR
 		gbc_lblGuest_1.gridx = 0;
 		gbc_lblGuest_1.gridy = 7;
 		frame.getContentPane().add(scoreHome, gbc_lblGuest_1);
-		
 		
 		scoreGuest.setVerticalAlignment(SwingConstants.TOP);
 		scoreGuest.setForeground(Color.RED); 
@@ -233,14 +259,14 @@ public class JumbotronAR
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
+				incrementHomeScore(); 
 			}
 		});
-		
 		menuBar.add(btnNewButton);
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				
+				decrementHomeScore(); 
 			}
 		});
 		
@@ -248,12 +274,49 @@ public class JumbotronAR
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				
+				incrementGuestScore(); 
 			}
 		});
 		
 		menuBar.add(btnNewButton_2);
+		btnDecrementGuest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				decrementGuestScore(); 
+			}
+		});
 		
+		menuBar.add(btnDecrementGuest);
+		btnReset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				scoreHome.setText("0");
+				scoreGuest.setText("0");
+			}
+		});
+		
+		menuBar.add(btnReset);
+		
+		menuBar.add(btnStartTimer);
+		
+		menuBar.add(btnPauseTimer);
+		
+		menuBar.add(btnResetTimer);
+		
+		menuBar.add(btnmin);
+		
+		menuBar.add(btnmin_1);
+		
+		menuBar.add(btnsec);
+		
+		menuBar.add(btnsec_1);
+		
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
 		
 	}
 	 
