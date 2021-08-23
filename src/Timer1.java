@@ -1,3 +1,4 @@
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -9,22 +10,22 @@ import java.util.concurrent.TimeUnit;
  * 
  * Can be used either as a normal timer or a countdown timer.
  * 
- * @author Sridhar Sundar Raman
+ * @author Sridhar Sundar Raman modified by Dakota Soares
  * 
  */
-public class Timer1 {
+public abstract class Timer1 {
 	public static final int DURATION_INFINITY = -1;
 	private volatile boolean isRunning = false;
-	private long interval;
+	protected long interval;
 	private long elapsedTime;
-	private long duration;
+	public long duration;
 	private ScheduledExecutorService execService = Executors
 			.newSingleThreadScheduledExecutor();
 	private Future<?> future = null;
 
 	/**
 	 * Default constructor which sets the interval to 1000 ms (1s) and the
-	 * duration to {@link Timer#DURATION_INFINITY}
+	 * duration to {@link Timer1#DURATION_INFINITY}
 	 */
 	public Timer1() {
 		this(1000, -1);
@@ -50,9 +51,11 @@ public class Timer1 {
 			return;
 
 		isRunning = true;
+		 
 		future = execService.scheduleWithFixedDelay(new Runnable() {
 			@Override
-			public void run() {
+			public void run() 
+			{
 				onTick();
 				elapsedTime += Timer1.this.interval;
 				if (duration > 0) {
@@ -86,15 +89,15 @@ public class Timer1 {
 	/**
 	 *	This method is called periodically with the interval set as the delay between subsequent calls. 
 	 */
-	protected void onTick() {
-	}
+	protected abstract void onTick();
+	
+	protected abstract String currentTime(Duration d); 
 	
 	
 	/**
 	 * This method is called once the timer has run for the specified duration. If the duration was set as infinity, then this method is never called.
 	 */
-	protected void onFinish() {
-	}
+	protected abstract void onFinish();
 
 	/**
 	 * Stops the timer. If the timer is not running, then this call does nothing.

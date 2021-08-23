@@ -4,7 +4,6 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Color;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
 
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -18,21 +17,23 @@ import javax.sound.sampled.Clip;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.time.Duration;
 import java.awt.event.ActionEvent;
 
-public class JumbotronAR implements ActionListener 
+public class JumbotronAR
 {
+	
+
 	private JFrame frame;
 	long lastUpdate;
+	long interval = 1001; 
+	long d; 
+	//This creates a default timer which ticks every 1 seconds, and runs for 20 minutes.
+		Timer1 twoSecondTimer = new ExampleTimer(interval, d);
 	
-	Timer timer = new Timer(1000, this);
-	
-     JLabel timer1 = new JLabel("00 : 00");
+     JLabel timer1 = new JLabel("20 : 00");
 		JLabel scoreHome = new JLabel("0");
-		JLabel scoreGuest = new JLabel("0");
-		long ms = 1; 
-		long mp = 20000; 
-		Timer1 mytimer = new Timer1(ms, mp); 
+		JLabel scoreGuest = new JLabel("0"); 
 		private final JMenuBar menuBar = new JMenuBar();
 		private final JButton btnNewButton = new JButton("Increment Home");
 		private final JButton btnNewButton_1 = new JButton("Decrement Home");
@@ -67,7 +68,7 @@ public class JumbotronAR implements ActionListener
 	 */
 	public JumbotronAR() 
 	{
-		
+		twoSecondTimer.duration =  1200000l;
 		initialize();
 		
 	    
@@ -85,6 +86,7 @@ public class JumbotronAR implements ActionListener
 	{
 		String score = scoreGuest.getText(); 
 		int score1 = 0; 
+		twoSecondTimer.pause();
 		try
 		{
 			try {
@@ -128,6 +130,7 @@ public class JumbotronAR implements ActionListener
 	{
 		String score = scoreHome.getText(); 
 		int score1 = 0; 
+		twoSecondTimer.pause();
 		try
 		{
 			
@@ -296,10 +299,30 @@ public class JumbotronAR implements ActionListener
 		});
 		
 		menuBar.add(btnReset);
+		btnStartTimer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				twoSecondTimer.start();
+			}
+		});
 		
 		menuBar.add(btnStartTimer);
+		btnPauseTimer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				twoSecondTimer.pause();
+			}
+		});
 		
 		menuBar.add(btnPauseTimer);
+		btnResetTimer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				twoSecondTimer.cancel();
+				timer1.setText("20 : 00");
+				d = 1200000l; 
+			}
+		});
 		
 		menuBar.add(btnResetTimer);
 		
@@ -310,15 +333,45 @@ public class JumbotronAR implements ActionListener
 		menuBar.add(btnsec);
 		
 		menuBar.add(btnsec_1);
-		
-		
+			
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+	
+	@SuppressWarnings("serial")
+	public class ExampleTimer extends Timer1{
 		
+		public ExampleTimer() {
+			super();
+		}
+		
+		public ExampleTimer(long interval, long duration){
+			super(interval, duration);
+		}
+
+		@Override
+		protected void onTick() 
+		{	
+			Duration d = Duration.ofMillis(getRemainingTime());
+			currentTime(d); 
+			
+		}
+
+		protected String currentTime(Duration d)
+		{
+			long minutesPart = d.toMinutes(); 
+			long secondsPart = d.minusMinutes( minutesPart ).getSeconds() ;
+			 
+			String str = String.format("%02d", minutesPart); 
+			String str2 = String.format("%02d", secondsPart);
+			timer1.setText(str + " : " + str2);
+			return str + " : " + str2; 
+		}
+		
+		@Override
+		protected void onFinish() 
+		{
+		}
 	}
 	 
-
+	
 }
+
