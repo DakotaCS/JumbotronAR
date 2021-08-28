@@ -27,6 +27,7 @@ public class JumbotronAR
 	private JFrame frame;
 	long lastUpdate;
 	long interval = 1001; 
+	boolean isMuted = false; 
 	long d; 
 	//This creates a default timer which ticks every 1 seconds, and runs for 20 minutes.
 		Timer1 twoSecondTimer = new ExampleTimer(interval, d);
@@ -47,6 +48,8 @@ public class JumbotronAR
 		private final JButton btnmin_1 = new JButton("-1min");
 		private final JButton btnsec = new JButton("+5sec");
 		private final JButton btnsec_1 = new JButton("-5sec");
+		private final JButton btnMuteunmute = new JButton("Mute/Unmute");
+		private final JButton btnExit = new JButton("Exit");
 	/**
 	 * Launch the application.
 	 */
@@ -86,22 +89,30 @@ public class JumbotronAR
 	{
 		String score = scoreGuest.getText(); 
 		int score1 = 0; 
-		twoSecondTimer.pause();
+		//twoSecondTimer.pause();
 		try
 		{
-			try {
-		        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/toronto_goal_horn_clip.wav").getAbsoluteFile());
-		        Clip clip = AudioSystem.getClip();
-		        clip.open(audioInputStream);
-		        clip.start();
-		    } catch(Exception ex) {
-		        System.out.println("Error with playing sound.");
-		        ex.printStackTrace();
-		    }
+			if(isMuted = false)
+			{
+				try 
+				{
+					AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/toronto_goal_horn_clip.wav").getAbsoluteFile());
+					Clip clip = AudioSystem.getClip();
+					clip.open(audioInputStream);
+					clip.start();
+				} 
+				catch(Exception ex) 
+				{
+					System.out.println("Error with playing sound.");
+					ex.printStackTrace();
+				}
+			}
+			
 			score1 = Integer.parseInt(score); 
 			score1++; 
 			score= String.valueOf(score1); 
 			scoreGuest.setText(score);
+		
 		}
 		catch(Exception e)
 		{
@@ -130,24 +141,31 @@ public class JumbotronAR
 	{
 		String score = scoreHome.getText(); 
 		int score1 = 0; 
-		twoSecondTimer.pause();
+		//twoSecondTimer.pause();
 		try
 		{
+			if(isMuted = false)
+			{
+					try 
+					{
+						AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/tampa_goal_horn_clip.wav").getAbsoluteFile());
+						Clip clip = AudioSystem.getClip();
+						clip.open(audioInputStream);
+						clip.start();
+					} 
+					catch(Exception ex) 
+					{
+						System.out.println("Error with playing sound.");
+						ex.printStackTrace();
+					}
+			}
 			
-			try {
-		        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/tampa_goal_horn_clip.wav").getAbsoluteFile());
-		        Clip clip = AudioSystem.getClip();
-		        clip.open(audioInputStream);
-		        clip.start();
-		    } catch(Exception ex) {
-		        System.out.println("Error with playing sound.");
-		        ex.printStackTrace();
-		    }
 			score1 = Integer.parseInt(score); 
 			score1++; 
 			score= String.valueOf(score1); 
 			scoreHome.setText(score);
 		}
+		
 		catch(Exception e)
 		{
 			System.out.println("That didn't work");
@@ -333,6 +351,29 @@ public class JumbotronAR
 		menuBar.add(btnsec);
 		
 		menuBar.add(btnsec_1);
+		btnMuteunmute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				if(isMuted = false)
+				{
+					isMuted = true; 
+				}
+				else if (isMuted = true)
+				{
+					isMuted = false; 
+				}
+			}
+		});
+		
+		menuBar.add(btnMuteunmute);
+		btnExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				System.exit(0);
+			}
+		});
+		
+		menuBar.add(btnExit);
 			
 	}
 	
