@@ -27,7 +27,6 @@ public class JumbotronAR
 	private JFrame frame;
 	long lastUpdate;
 	long interval = 1001; 
-	boolean isMuted = false; 
 	long d; 
 	//This creates a default timer which ticks every 1 seconds, and runs for 20 minutes.
 		Timer1 twoSecondTimer = new ExampleTimer(interval, d);
@@ -92,7 +91,7 @@ public class JumbotronAR
 		//twoSecondTimer.pause();
 		try
 		{
-			if(isMuted = false)
+			//if(isMuted = false)
 			{
 				try 
 				{
@@ -144,7 +143,7 @@ public class JumbotronAR
 		//twoSecondTimer.pause();
 		try
 		{
-			if(isMuted = false)
+			//if(isMuted = false)
 			{
 					try 
 					{
@@ -354,14 +353,7 @@ public class JumbotronAR
 		btnMuteunmute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(isMuted = false)
-				{
-					isMuted = true; 
-				}
-				else if (isMuted = true)
-				{
-					isMuted = false; 
-				}
+				
 			}
 		});
 		
