@@ -59,7 +59,8 @@ public abstract class Timer1 {
 				onTick();
 				elapsedTime += Timer1.this.interval;
 				if (duration > 0) {
-					if(elapsedTime >=duration){
+					//original code is >= 
+					if(elapsedTime >duration){
 						onFinish();
 						future.cancel(false);
 					}
@@ -92,6 +93,8 @@ public abstract class Timer1 {
 	protected abstract void onTick();
 	
 	protected abstract String currentTime(Duration d); 
+	
+	protected abstract String currentTime(long d); 
 	
 	
 	/**

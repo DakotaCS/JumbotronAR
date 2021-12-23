@@ -26,12 +26,17 @@ public class JumbotronAR
 
 	private JFrame frame;
 	long lastUpdate;
-	long interval = 1001; 
-	long d; 
+	long interval = 1000; 
+	long d = 0; 
 	//This creates a default timer which ticks every 1 seconds, and runs for 20 minutes.
 		Timer1 twoSecondTimer = new ExampleTimer(interval, d);
+		
+	String toronto = ""; 
+	String tampa = ""; 
+	String eop = "src/nhl_eop.wav"; 
+	boolean isClicked = false;
 	
-     JLabel timer1 = new JLabel("20 : 00");
+     JLabel timer1 = new JLabel("00 : 00");
 		JLabel scoreHome = new JLabel("0");
 		JLabel scoreGuest = new JLabel("0"); 
 		private final JMenuBar menuBar = new JMenuBar();
@@ -70,7 +75,7 @@ public class JumbotronAR
 	 */
 	public JumbotronAR() 
 	{
-		twoSecondTimer.duration =  1200000l;
+		twoSecondTimer.duration =  0;
 		initialize();
 		
 	    
@@ -82,28 +87,26 @@ public class JumbotronAR
 		scoreHome.setText("0");
 	}
 	
+
 	
 	//increment guest score 
 	public void incrementGuestScore()
 	{
 		String score = scoreGuest.getText(); 
 		int score1 = 0; 
-		//twoSecondTimer.pause();
 		try
 		{
-			//if(isMuted = false)
 			{
 				try 
 				{
-					AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/toronto_goal_horn_clip.wav").getAbsoluteFile());
+					AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(toronto).getAbsoluteFile());
 					Clip clip = AudioSystem.getClip();
 					clip.open(audioInputStream);
 					clip.start();
 				} 
 				catch(Exception ex) 
 				{
-					System.out.println("Error with playing sound.");
-					ex.printStackTrace();
+					System.out.println("Error with playing sound. (Toronto)");
 				}
 			}
 			
@@ -126,6 +129,10 @@ public class JumbotronAR
 			try
 			{
 				score1 = Integer.parseInt(score); 
+				if (score1 <= 0 )
+				{
+					throw new Exception(); 
+				}
 				score1--; 
 				score= String.valueOf(score1); 
 				scoreGuest.setText(score);
@@ -140,22 +147,19 @@ public class JumbotronAR
 	{
 		String score = scoreHome.getText(); 
 		int score1 = 0; 
-		//twoSecondTimer.pause();
 		try
 		{
-			//if(isMuted = false)
 			{
 					try 
 					{
-						AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("src/tampa_goal_horn_clip.wav").getAbsoluteFile());
+						AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(tampa).getAbsoluteFile());
 						Clip clip = AudioSystem.getClip();
 						clip.open(audioInputStream);
 						clip.start();
 					} 
 					catch(Exception ex) 
 					{
-						System.out.println("Error with playing sound.");
-						ex.printStackTrace();
+						System.out.println("Error playing sound. (Tampa)");
 					}
 			}
 			
@@ -178,13 +182,16 @@ public class JumbotronAR
 		try
 		{
 			score1 = Integer.parseInt(score); 
+			if (score1 <= 0 )
+			{
+				throw new Exception(); 
+			}
 			score1--; 
 			score= String.valueOf(score1); 
 			scoreHome.setText(score);
 		}
 		catch(Exception e)
 		{
-			System.out.println("That didn't work");
 		}
 	}
 	
@@ -193,7 +200,6 @@ public class JumbotronAR
 	 */
 	private void initialize() 
 	{
-		
 		
 		frame = new JFrame();
 		frame.getContentPane().setBackground(Color.DARK_GRAY);
@@ -315,15 +321,25 @@ public class JumbotronAR
 			}
 		});
 		
-		menuBar.add(btnReset);
+
+		//start the clock
+		menuBar.add(btnStartTimer);
 		btnStartTimer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				twoSecondTimer.start();
+				if(twoSecondTimer.duration <= 0)
+				{
+					twoSecondTimer.cancel();
+				}
+				else
+				{
+					twoSecondTimer.start();
+				}
 			}
 		});
 		
-		menuBar.add(btnStartTimer);
+		//pause the clock
+		menuBar.add(btnPauseTimer);
 		btnPauseTimer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -331,33 +347,92 @@ public class JumbotronAR
 			}
 		});
 		
-		menuBar.add(btnPauseTimer);
+		//reset the clock
+		menuBar.add(btnResetTimer);
+		menuBar.add(btnReset);
 		btnResetTimer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
 				twoSecondTimer.cancel();
-				timer1.setText("20 : 00");
-				d = 1200000l; 
+				twoSecondTimer.duration = 0; 
+				timer1.setText("00 : 00"); 
 			}
 		});
 		
-		menuBar.add(btnResetTimer);
-		
-		menuBar.add(btnmin);
-		
+		//increment and decrement by 1 minute
 		menuBar.add(btnmin_1);
+		menuBar.add(btnmin);
+		btnmin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				twoSecondTimer.pause();
+				twoSecondTimer.duration += 60000; 
+				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime())); 
+				
+			}
+		});
+		btnmin_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				if (twoSecondTimer.duration > 60000)
+				{
+					twoSecondTimer.pause();
+					twoSecondTimer.duration -= 60000; 
+					timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+				}
+			}
+		});
 		
-		menuBar.add(btnsec);
-		
+		//increment and decrement 5 seconds: 
 		menuBar.add(btnsec_1);
+		menuBar.add(btnsec);
+		btnsec.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+
+				twoSecondTimer.pause();
+				twoSecondTimer.duration += 5000; 
+				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+			}
+		});
+		btnsec_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				if (twoSecondTimer.duration > 5000)
+				{
+				twoSecondTimer.pause();
+				twoSecondTimer.duration -= 5000; 
+				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+				}
+			}
+		});
+		
+		//mute/unmute the goal horns
+		menuBar.add(btnMuteunmute);
+		
 		btnMuteunmute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
 				
+				   if(!isClicked)
+				   {
+				         isClicked = true;
+						   toronto = "src/tgh.wav"; 
+							tampa = "src/tbgh.wav"; 
+							eop = "src/nhl_eop.wav"; 
+				         
+				   }
+				   else 
+				   {
+						toronto = ""; 
+						tampa = ""; 
+						eop = ""; 
+				   }
 			}
 		});
 		
-		menuBar.add(btnMuteunmute);
+		//exit the application 
+		menuBar.add(btnExit);
 		btnExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -365,14 +440,14 @@ public class JumbotronAR
 			}
 		});
 		
-		menuBar.add(btnExit);
+	
 			
 	}
-	
-	@SuppressWarnings("serial")
-	public class ExampleTimer extends Timer1{
+	public class ExampleTimer extends Timer1
+	{
 		
-		public ExampleTimer() {
+		public ExampleTimer() 
+		{
 			super();
 		}
 		
@@ -383,11 +458,12 @@ public class JumbotronAR
 		@Override
 		protected void onTick() 
 		{	
+			//Duration d = ....
 			Duration d = Duration.ofMillis(getRemainingTime());
 			currentTime(d); 
 			
 		}
-
+		
 		protected String currentTime(Duration d)
 		{
 			long minutesPart = d.toMinutes(); 
@@ -399,9 +475,40 @@ public class JumbotronAR
 			return str + " : " + str2; 
 		}
 		
+		protected String currentTime(long d)
+		{
+	        long minutes = (d / 1000) / 60;
+	        long seconds = (d / 1000) % 60;
+			 
+			String str = String.format("%02d", minutes); 
+			String str2 = String.format("%02d", seconds);
+			timer1.setText(str + " : " + str2);
+			return str + " : " + str2; 
+		}
+		
+		
 		@Override
 		protected void onFinish() 
 		{
+			
+			try 
+			{
+				AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(eop).getAbsoluteFile());
+				Clip clip = AudioSystem.getClip();
+				clip.open(audioInputStream);
+				clip.start();
+			} 
+			catch(Exception ex) 
+			{
+				System.out.println("Error with playing sound.");
+				ex.printStackTrace();
+			}
+			twoSecondTimer.cancel();
+			twoSecondTimer.duration = 0; 
+			timer1.setText("00 : 00"); 
+			System.out.println("done"); 
+		
+			
 		}
 	}
 	 
