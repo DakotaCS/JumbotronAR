@@ -349,8 +349,7 @@ public class JumbotronAR
 				    	      GraphicsDevice device = graphics.getDefaultScreenDevice();
 				    	      
 				    window.frame.setVisible(true);
-					window.frame.setAlwaysOnTop(true);
-				    window.frame.setResizable(false);
+				    window.frame.setResizable(true);
 				    device.setFullScreenWindow(window.frame);
 					
 					Thread t=new Thread() {
