@@ -2,6 +2,8 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Color;
 import javax.swing.SwingConstants;
 
@@ -20,9 +22,282 @@ import java.io.File;
 import java.time.Duration;
 import java.awt.event.ActionEvent;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import gnu.io.CommPortIdentifier; 
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent; 
+import gnu.io.SerialPortEventListener; 
+import java.util.Enumeration;
+
+
+
 public class JumbotronAR
 {
-	
+	public class serialinput implements SerialPortEventListener {
+		SerialPort serialPort;
+	        /** The port we're normally going to use. */
+		private final String PORT_NAMES[] = { 
+				"/dev/tty.usbserial-A9007UX1", // Mac OS X
+	                        "/dev/ttyACM0", // Raspberry Pi
+				"/dev/ttyUSB0", // Linux
+				"COM3", // Windows
+		};
+		/**
+		* A BufferedReader which will be fed by a InputStreamReader 
+		* converting the bytes into characters 
+		* making the displayed results codepage independent
+		*/
+		private BufferedReader input;
+		/** The output stream to the port */
+		@SuppressWarnings("unused")
+		private OutputStream output;
+		/** Milliseconds to block while waiting for port open */
+		private static final int TIME_OUT = 2000;
+		/** Default bits per second for COM port. */
+		private static final int DATA_RATE = 115200;
+		
+		public String serialinput = ""; 
+
+		public void initialize() {
+	                // the next line is for Raspberry Pi and 
+	                // gets us into the while loop and was suggested here:  https://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
+	                //System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
+
+			CommPortIdentifier portId = null;
+			@SuppressWarnings("rawtypes")
+			Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
+
+			//First, Find an instance of serial port as set in PORT_NAMES.
+			while (portEnum.hasMoreElements()) {
+				CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
+				for (String portName : PORT_NAMES) {
+					if (currPortId.getName().equals(portName)) {
+						portId = currPortId;
+						break;
+					}
+				}
+			}
+			if (portId == null) {
+				System.out.println("Could not find COM port.");
+				return;
+			}
+
+			try {
+				// open serial port, and use class name for the appName.
+				serialPort = (SerialPort) portId.open(this.getClass().getName(),
+						TIME_OUT);
+
+				// set port parameters
+				serialPort.setSerialPortParams(DATA_RATE,
+						SerialPort.DATABITS_8,
+						SerialPort.STOPBITS_1,
+						SerialPort.PARITY_NONE);
+
+				// open the streams
+				input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
+				output = serialPort.getOutputStream();
+
+				// add event listeners
+				serialPort.addEventListener(this);
+				serialPort.notifyOnDataAvailable(true);
+			} catch (Exception e) {
+				System.err.println(e.toString());
+			}
+		}
+
+		/**
+		 * This should be called when you stop using the port.
+		 * This will prevent port locking on platforms like Linux.
+		 */
+		public synchronized void close() {
+			if (serialPort != null) {
+				serialPort.removeEventListener();
+				serialPort.close();
+			}
+		}
+
+		/**
+		 * Handle an event on the serial port. Read the data and print it.
+		 */
+		public synchronized void serialEvent(SerialPortEvent oEvent) {
+			if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+				try {
+					serialinput=input.readLine();
+					System.out.println(serialinput);
+					
+					if (serialinput.equals("t"))
+					{
+						incrementOneMin(); 
+					}
+					else if (serialinput.equals("o"))
+					{
+						decrementOneMin(); 
+					}
+					else if (serialinput.equals("e"))
+					{
+						incrementOneSec(); 
+					}
+					else if (serialinput.equals("n"))
+					{
+						decrementOneSec(); 
+					}
+					else if (serialinput.equals("r"))
+					{
+						reset();  
+					}
+					else if (serialinput.equals("s"))
+					{
+						pause(); 
+					}
+					else if (serialinput.equals("a"))
+					{
+						start(); 
+					}
+					
+					else if (serialinput.equals("c"))
+					{
+						increaseHome(); 
+					}
+					else if (serialinput.equals("g"))
+					{
+						decreaseHome(); 
+					}
+					else if (serialinput.equals("i"))
+					{
+						increaseGuest(); 
+					}
+					else if (serialinput.equals("d"))
+					{
+						decreaseGuest(); 
+					}
+					else if (serialinput.equals("z")) 
+					{
+						resetScore(); 
+					}
+					else if (serialinput.equals("h"))
+					{
+						toggleHorn(); 
+					}
+					
+					
+				} catch (Exception e) {
+					System.err.println(e.toString());
+				}
+			}
+		}
+		
+		public void pause() 
+		{
+			twoSecondTimer.pause();
+		}
+
+		private void toggleHorn() 
+		{
+			 if(!isClicked)
+			   {
+			         isClicked = true;
+					   toronto = "src/tgh.wav"; 
+						tampa = "src/tbgh.wav"; 
+						eop = "src/nhl_eop.wav"; 
+			         
+			   }
+			   else 
+			   {
+					toronto = ""; 
+					tampa = ""; 
+					eop = ""; 
+			   }
+			
+		}
+		
+		public void reset()
+		{
+			twoSecondTimer.cancel();
+			twoSecondTimer.duration = 0; 
+			timer1.setText("00 : 00"); 
+		}
+
+		private void resetScore() 
+		{
+			scoreGuest.setText("0");
+			scoreHome.setText("0");	
+		}
+
+		private void decreaseGuest() 
+		{
+			decrementGuestScore(); 
+			
+		}
+
+		private void increaseGuest() 
+		{
+			incrementGuestScore(); 
+			
+		}
+
+		private void decreaseHome() 
+		{
+			decrementHomeScore(); 
+		}
+
+		private void increaseHome() 
+		{
+			incrementHomeScore(); 
+		}
+
+		private void start() 
+		{
+			if(twoSecondTimer.duration <= 0)
+			{
+				twoSecondTimer.cancel();
+			}
+			else
+			{
+				twoSecondTimer.start();
+			}
+			
+		}
+
+		private void decrementOneSec() 
+		{
+			if (twoSecondTimer.duration > 5000)
+			{
+			twoSecondTimer.pause();
+			twoSecondTimer.duration -= 1000; 
+			timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+			}
+		}
+
+		private void incrementOneSec() 
+		{
+			twoSecondTimer.pause();
+			twoSecondTimer.duration += 1000; 
+			timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+			
+		}
+
+		private void decrementOneMin() 
+		{
+			if (twoSecondTimer.duration > 60000)
+			{
+				twoSecondTimer.pause();
+				twoSecondTimer.duration -= 60000; 
+				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
+			}
+			
+		}
+
+		private void incrementOneMin() 
+		{
+			twoSecondTimer.pause();
+			twoSecondTimer.duration += 60000; 
+			timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime())); 
+			
+		}
+	 
+	}
 
 	private JFrame frame;
 	long lastUpdate;
@@ -59,29 +334,55 @@ public class JumbotronAR
 	 */
 	public static void main(String[] args) 
 	{
-		serialinput main = new serialinput();
-		main.initialize();
-		Thread t=new Thread() {
-			public void run() {
-				//the following line will keep this app alive for 1000 seconds,
-				//waiting for events to occur and responding to them (printing incoming messages to console).
-				try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
-			}
-		};
-		t.start();
-		System.out.println("Started");
-		
 		EventQueue.invokeLater(new Runnable() {
+			@SuppressWarnings("deprecation")
 			public void run() {
 				try {
 					JumbotronAR window = new JumbotronAR();
-					window.frame.setVisible(true);
+					JumbotronAR.serialinput main = window.new serialinput(); 
+					
+					
+					window.menuBar.hide();
+					main.initialize();
+				      GraphicsEnvironment graphics =
+				    	      GraphicsEnvironment.getLocalGraphicsEnvironment();
+				    	      GraphicsDevice device = graphics.getDefaultScreenDevice();
+				    	      
+				    window.frame.setVisible(true);
+					window.frame.setAlwaysOnTop(true);
+				    window.frame.setResizable(false);
+				    device.setFullScreenWindow(window.frame);
+					
+					Thread t=new Thread() {
+						public void run() {
+							//the following line will keep this app alive for 1000 seconds,
+							//waiting for events to occur and responding to them (printing incoming messages to console).
+							try 
+							{
+								Thread.sleep(1000000);
+								System.out.println(main.serialinput + "From jumbotron"); 
+								
+							} 
+							catch (InterruptedException ie) 
+							{
+								
+							}
+						}
+					};
+					t.start();
+					System.out.println("Started");
+					
+					
+					
 				} catch (Exception e) {
 					e.printStackTrace(); 
 				}
 			}
 		});
+		
 	}
+
+
 
 	/**
 	 * Create the application.
@@ -93,14 +394,6 @@ public class JumbotronAR
 		
 	    
 	}	
-	
-	public void reset()
-	{
-		scoreGuest.setText("0");
-		scoreHome.setText("0");
-	}
-	
-
 	
 	//increment guest score 
 	public void incrementGuestScore()
@@ -404,7 +697,7 @@ public class JumbotronAR
 			{
 
 				twoSecondTimer.pause();
-				twoSecondTimer.duration += 5000; 
+				twoSecondTimer.duration += 1000; 
 				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
 			}
 		});
@@ -414,7 +707,7 @@ public class JumbotronAR
 				if (twoSecondTimer.duration > 5000)
 				{
 				twoSecondTimer.pause();
-				twoSecondTimer.duration -= 5000; 
+				twoSecondTimer.duration -= 1000; 
 				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
 				}
 			}
