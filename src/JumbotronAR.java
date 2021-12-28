@@ -156,19 +156,19 @@ public class JumbotronAR
 						start(); 
 					}
 					
-					else if (serialinput.equals("c"))
+					else if (serialinput.equals("i"))
 					{
 						increaseHome(); 
 					}
-					else if (serialinput.equals("g"))
+					else if (serialinput.equals("d"))
 					{
 						decreaseHome(); 
 					}
-					else if (serialinput.equals("i"))
+					else if (serialinput.equals("c"))
 					{
 						increaseGuest(); 
 					}
-					else if (serialinput.equals("d"))
+					else if (serialinput.equals("g"))
 					{
 						decreaseGuest(); 
 					}
@@ -342,7 +342,7 @@ public class JumbotronAR
 					JumbotronAR.serialinput main = window.new serialinput(); 
 					
 					
-					//window.menuBar.hide();
+					window.menuBar.hide();
 					main.initialize();
 				      GraphicsEnvironment graphics =
 				    	      GraphicsEnvironment.getLocalGraphicsEnvironment();
