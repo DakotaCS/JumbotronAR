@@ -576,9 +576,8 @@ public class JumbotronAR
 		lblGuest.setFont(new Font("Tw Cen MT Condensed", Font.BOLD | Font.ITALIC, 45));
 		GridBagConstraints gbc_lblGuest = new GridBagConstraints();
 		gbc_lblGuest.fill = GridBagConstraints.VERTICAL;
-		gbc_lblGuest.gridwidth = 2;
 		gbc_lblGuest.insets = new Insets(0, 0, 5, 5);
-		gbc_lblGuest.gridx = 0;
+		gbc_lblGuest.gridx = 1;
 		gbc_lblGuest.gridy = 0;
 		frame.getContentPane().add(lblGuest, gbc_lblGuest);
 		
@@ -623,7 +622,7 @@ public class JumbotronAR
 		frame.getContentPane().add(lblNewLabel, gbc_lblNewLabel);
 		
 		GridBagConstraints gbc_homePanel = new GridBagConstraints();
-		gbc_homePanel.fill = GridBagConstraints.BOTH;
+		gbc_homePanel.fill = GridBagConstraints.VERTICAL;
 		gbc_homePanel.insets = new Insets(0, 0, 5, 5);
 		gbc_homePanel.gridx = 1;
 		gbc_homePanel.gridy = 2;
@@ -645,7 +644,7 @@ public class JumbotronAR
 		
 		GridBagConstraints gbc_NHL = new GridBagConstraints();
 		gbc_NHL.insets = new Insets(0, 0, 5, 5);
-		gbc_NHL.fill = GridBagConstraints.BOTH;
+		gbc_NHL.fill = GridBagConstraints.HORIZONTAL;
 		gbc_NHL.gridx = 3;
 		gbc_NHL.gridy = 2;
 		frame.getContentPane().add(NHL, gbc_NHL);
