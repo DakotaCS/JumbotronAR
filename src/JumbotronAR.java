@@ -20,22 +20,28 @@ import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Color;
-import javax.swing.SwingConstants;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+
 //for the GUI - Swing
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.JMenuBar;
+import javax.imageio.ImageIO;
 //for the sound
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.io.File;
+import java.io.IOException;
 //for the timing sequence
 import java.time.Duration;
 //file imports
@@ -351,6 +357,8 @@ public class JumbotronAR
     JLabel timer1 = new JLabel("00 : 00");
 	JLabel scoreHome = new JLabel("0");
 	JLabel scoreGuest = new JLabel("0"); 
+	Border border = BorderFactory.createLineBorder(Color.white, 5); 
+	
 	//auto-generated code 
 	private final JMenuBar menuBar = new JMenuBar();
 	private final JButton btnNewButton = new JButton("Increment Home");
@@ -366,7 +374,10 @@ public class JumbotronAR
 	private final JButton btnsec = new JButton("+5sec");
 	private final JButton btnsec_1 = new JButton("-5sec");
 	private final JButton btnMuteunmute = new JButton("Mute/Unmute");
-	private final JButton btnExit = new JButton("Exit");
+	private final JButton btnExit = new JButton("Exit");	
+	private final JPanel NHL = new JPanel();
+	private final JPanel homePanel = new JPanel();
+	private final JPanel guestPanel = new JPanel();
 	/**
 	 * Launch the application.
 	 */
@@ -545,52 +556,49 @@ public class JumbotronAR
 		
 		frame = new JFrame();
 		frame.setResizable(false);
-		frame.getContentPane().setBackground(Color.DARK_GRAY);
+		Color darkG = new Color(32, 32, 32);
+		Color darkY = new Color(255,204,0); 
+		frame.getContentPane().setBackground(darkG);
 		//original 1800 x 1000
 		frame.setBounds(100, 100, 720, 480);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{182, 552, 443, 0};
-		gridBagLayout.rowHeights = new int[]{125, 56, 97, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWidths = new int[]{0, 178, 0, 552, 0, 178, 0, 0};
+		gridBagLayout.rowHeights = new int[]{125, 0, 97, 0, 0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		frame.getContentPane().setLayout(gridBagLayout);
 		
 		JLabel lblGuest = new JLabel("HOME");
 		lblGuest.setForeground(Color.WHITE);
 		lblGuest.setBackground(Color.WHITE);
-		lblGuest.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 40));
+		lblGuest.setFont(new Font("Tw Cen MT Condensed", Font.BOLD | Font.ITALIC, 45));
 		GridBagConstraints gbc_lblGuest = new GridBagConstraints();
+		gbc_lblGuest.fill = GridBagConstraints.VERTICAL;
+		gbc_lblGuest.gridwidth = 2;
 		gbc_lblGuest.insets = new Insets(0, 0, 5, 5);
 		gbc_lblGuest.gridx = 0;
 		gbc_lblGuest.gridy = 0;
 		frame.getContentPane().add(lblGuest, gbc_lblGuest);
 		
-		JLabel lblNewLabel = new JLabel("GUEST");
-		lblNewLabel.setForeground(Color.WHITE);
-		lblNewLabel.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 40));
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
-		gbc_lblNewLabel.gridx = 2;
-		gbc_lblNewLabel.gridy = 0;
-		frame.getContentPane().add(lblNewLabel, gbc_lblNewLabel);
-		
 		JPanel panel = new JPanel();
 		panel.setForeground(Color.WHITE);
-		panel.setBackground(Color.DARK_GRAY);
-		panel.setBorder(new LineBorder(Color.WHITE, 10, true));
+		panel.setBackground(Color.BLACK);
+		//default white
+		panel.setBorder(new LineBorder(Color.WHITE, 5, true));
 		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridwidth = 3;
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.insets = new Insets(0, 0, 5, 5);
-		gbc_panel.gridx = 1;
-		gbc_panel.gridy = 1;
+		gbc_panel.gridx = 2;
+		gbc_panel.gridy = 0;
 		frame.getContentPane().add(panel, gbc_panel);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{552, 0};
 		gbl_panel.rowHeights = new int[]{0, 0};
 		gbl_panel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
 		timer1.setBackground(Color.DARK_GRAY);
@@ -599,29 +607,87 @@ public class JumbotronAR
 		gbc_lblNewLabel_1.gridx = 0;
 		gbc_lblNewLabel_1.gridy = 0;
 		panel.add(timer1, gbc_lblNewLabel_1);
-		timer1.setVerticalAlignment(SwingConstants.TOP);
-		timer1.setForeground(Color.WHITE);
-		timer1.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 62));
+		timer1.setForeground(Color.RED);
+		//default "Tw Cen MT Condensed"
+		timer1.setFont(new Font("Digital-7", Font.BOLD, 90));
 		
-		scoreHome.setVerticalAlignment(SwingConstants.TOP);
-		scoreHome.setForeground(Color.RED);
-		scoreHome.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 125));
+		
+		JLabel lblNewLabel = new JLabel("GUEST");
+		lblNewLabel.setForeground(Color.WHITE);
+		lblNewLabel.setFont(new Font("Tw Cen MT Condensed", Font.BOLD | Font.ITALIC, 45));
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.fill = GridBagConstraints.VERTICAL;
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.gridx = 5;
+		gbc_lblNewLabel.gridy = 0;
+		frame.getContentPane().add(lblNewLabel, gbc_lblNewLabel);
+		
+		GridBagConstraints gbc_homePanel = new GridBagConstraints();
+		gbc_homePanel.fill = GridBagConstraints.BOTH;
+		gbc_homePanel.insets = new Insets(0, 0, 5, 5);
+		gbc_homePanel.gridx = 1;
+		gbc_homePanel.gridy = 2;
+		frame.getContentPane().add(homePanel, gbc_homePanel);
+		GridBagLayout gbl_homePanel = new GridBagLayout();
+		gbl_homePanel.columnWidths = new int[]{178, 0};
+		gbl_homePanel.rowHeights = new int[]{97, 0};
+		gbl_homePanel.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_homePanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		homePanel.setLayout(gbl_homePanel);
+		GridBagConstraints gbc_scoreHome = new GridBagConstraints();
+		gbc_scoreHome.fill = GridBagConstraints.VERTICAL;
+		gbc_scoreHome.gridx = 0;
+		gbc_scoreHome.gridy = 0;
+		homePanel.add(scoreHome, gbc_scoreHome);
+		scoreHome.setForeground(darkY);
+		scoreHome.setFont(new Font("Digital-7", Font.BOLD, 150));
 		scoreHome.setBackground(Color.WHITE);
-		GridBagConstraints gbc_lblGuest_1 = new GridBagConstraints();
-		gbc_lblGuest_1.insets = new Insets(0, 0, 5, 5);
-		gbc_lblGuest_1.gridx = 0;
-		gbc_lblGuest_1.gridy = 2;
-		frame.getContentPane().add(scoreHome, gbc_lblGuest_1);
 		
-		scoreGuest.setVerticalAlignment(SwingConstants.TOP);
-		scoreGuest.setForeground(Color.RED); 
-		scoreGuest.setFont(new Font("Tw Cen MT Condensed", Font.BOLD, 125));
+		GridBagConstraints gbc_NHL = new GridBagConstraints();
+		gbc_NHL.insets = new Insets(0, 0, 5, 5);
+		gbc_NHL.fill = GridBagConstraints.BOTH;
+		gbc_NHL.gridx = 3;
+		gbc_NHL.gridy = 2;
+		frame.getContentPane().add(NHL, gbc_NHL);
+		
+		GridBagConstraints gbc_guestPanel = new GridBagConstraints();
+		gbc_guestPanel.insets = new Insets(0, 0, 5, 5);
+		gbc_guestPanel.fill = GridBagConstraints.BOTH;
+		gbc_guestPanel.gridx = 5;
+		gbc_guestPanel.gridy = 2;
+		frame.getContentPane().add(guestPanel, gbc_guestPanel);
+		GridBagLayout gbl_guestPanel = new GridBagLayout();
+		gbl_guestPanel.columnWidths = new int[]{178, 0};
+		gbl_guestPanel.rowHeights = new int[]{97, 0};
+		gbl_guestPanel.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_guestPanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		guestPanel.setLayout(gbl_guestPanel);
+		GridBagConstraints gbc_scoreGuest = new GridBagConstraints();
+		gbc_scoreGuest.fill = GridBagConstraints.VERTICAL;
+		gbc_scoreGuest.gridx = 0;
+		gbc_scoreGuest.gridy = 0;
+		guestPanel.add(scoreGuest, gbc_scoreGuest);
+		scoreGuest.setForeground(darkY); 
+		scoreGuest.setFont(new Font("Digital-7", Font.BOLD, 150));
 		scoreGuest.setBackground(Color.WHITE);
-		GridBagConstraints gbc_lblGuest_1_1 = new GridBagConstraints();
-		gbc_lblGuest_1_1.insets = new Insets(0, 0, 5, 0);
-		gbc_lblGuest_1_1.gridx = 2;
-		gbc_lblGuest_1_1.gridy = 2;
-		frame.getContentPane().add(scoreGuest, gbc_lblGuest_1_1);
+		
+		homePanel.setBackground(Color.BLACK);
+		guestPanel.setBackground(Color.BLACK);
+		
+		
+		NHL.setOpaque(false);
+		try {
+			 BufferedImage nhl = ImageIO.read(new File("nhl.png"));
+				NHL.add(new JLabel(new ImageIcon(nhl)));
+			 
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		//scoreHome.setBorder(border);
+		//scoreGuest.setBorder(border);
 		
 		frame.setJMenuBar(menuBar);
 		btnNewButton.addActionListener(new ActionListener() {
