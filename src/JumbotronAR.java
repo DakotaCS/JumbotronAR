@@ -1,3 +1,18 @@
+/**
+ * ***********************************************************************
+ * Jumbotron (Scoreboard) for Backyard/Indoor Rinks 
+ * 
+ * Class: JumbotronAR.java
+ * 
+ * Purpose: Creates an object of type JumbotronAR and its GUI. 
+ * Note: Errors on the standard output stream will NOT be visible in the GUI. 
+ * 
+ * @author: Dakota Soares and Ben Martens 
+ * 
+ * @date: December 29/21
+ */
+
+//for the GUI
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -6,22 +21,24 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Color;
 import javax.swing.SwingConstants;
-
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+//for the GUI - Swing
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import javax.swing.JMenuBar;
+//for the sound
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.JButton;
-import java.awt.event.ActionListener;
 import java.io.File;
+//for the timing sequence
 import java.time.Duration;
-import java.awt.event.ActionEvent;
-
+//file imports
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -29,80 +46,81 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent; 
 import gnu.io.SerialPortEventListener; 
+//enumerator util
 import java.util.Enumeration;
-
-
 
 public class JumbotronAR
 {
-	public class serialinput implements SerialPortEventListener {
+	//Nested class that implements the Serial Port Event Listener
+	public class serialinput implements SerialPortEventListener 
+	{
+		//create a serial port
 		SerialPort serialPort;
-	        /** The port we're normally going to use. */
-		private final String PORT_NAMES[] = { 
-				"/dev/tty.usbserial-A9007UX1", // Mac OS X
-	                        "/dev/ttyACM0", // Raspberry Pi
-				"/dev/ttyUSB0", // Linux
-				"COM3", // Windows
-		};
-		/**
-		* A BufferedReader which will be fed by a InputStreamReader 
-		* converting the bytes into characters 
-		* making the displayed results codepage independent
-		*/
+	    //the port is OS dependent
+		private final String PORT_NAMES[] = 
+			{ 
+				"/dev/tty.usbserial-A9007UX1", //MacOS
+	            "/dev/ttyACM0", //Raspberry PI
+				"/dev/ttyUSB0", //Linux/UNIX
+				"COM3", //Windows
+			};
+		//buffered reader wrapper class
 		private BufferedReader input;
-		/** The output stream to the port */
+		//outputstream
 		@SuppressWarnings("unused")
 		private OutputStream output;
-		/** Milliseconds to block while waiting for port open */
+		//block for x milliseconds while the port is open
 		private static final int TIME_OUT = 2000;
-		/** Default bits per second for COM port. */
+		//bps that can come through
 		private static final int DATA_RATE = 115200;
-		
+		//initialize serial input string
 		public String serialinput = ""; 
 
-		public void initialize() {
-	                // the next line is for Raspberry Pi and 
-	                // gets us into the while loop and was suggested here:  https://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
-	                //System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
-
+		public void initialize() 
+		{
+	        //the next line is for Raspberry Pi and 
+	        // gets us into the while loop and was suggested here:  https://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
+	        //System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
 			CommPortIdentifier portId = null;
 			@SuppressWarnings("rawtypes")
 			Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
-
-			//First, Find an instance of serial port as set in PORT_NAMES.
-			while (portEnum.hasMoreElements()) {
+			//Find an instance of serial port as set in PORT_NAMES.
+			while (portEnum.hasMoreElements()) 
+			{
 				CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-				for (String portName : PORT_NAMES) {
-					if (currPortId.getName().equals(portName)) {
+				for (String portName : PORT_NAMES) 
+				{
+					if (currPortId.getName().equals(portName)) 
+					{
 						portId = currPortId;
 						break;
 					}
 				}
 			}
+			//if the port is null let the user know
 			if (portId == null) {
 				System.out.println("Could not find COM port.");
 				return;
 			}
-
-			try {
+			try 
+			{
 				// open serial port, and use class name for the appName.
 				serialPort = (SerialPort) portId.open(this.getClass().getName(),
 						TIME_OUT);
-
 				// set port parameters
 				serialPort.setSerialPortParams(DATA_RATE,
 						SerialPort.DATABITS_8,
 						SerialPort.STOPBITS_1,
 						SerialPort.PARITY_NONE);
-
 				// open the streams
 				input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 				output = serialPort.getOutputStream();
-
 				// add event listeners
 				serialPort.addEventListener(this);
 				serialPort.notifyOnDataAvailable(true);
-			} catch (Exception e) {
+			} 
+			catch (Exception e) 
+			{
 				System.err.println(e.toString());
 			}
 		}
@@ -110,9 +128,13 @@ public class JumbotronAR
 		/**
 		 * This should be called when you stop using the port.
 		 * This will prevent port locking on platforms like Linux.
+		 * Note: In this application because the board is started automatically
+		 * and will be running constantly, close() is not necessary
 		 */
-		public synchronized void close() {
-			if (serialPort != null) {
+		public synchronized void close() 
+		{
+			if (serialPort != null) 
+			{
 				serialPort.removeEventListener();
 				serialPort.close();
 			}
@@ -121,9 +143,14 @@ public class JumbotronAR
 		/**
 		 * Handle an event on the serial port. Read the data and print it.
 		 */
-		public synchronized void serialEvent(SerialPortEvent oEvent) {
-			if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-				try {
+		public synchronized void serialEvent(SerialPortEvent oEvent) 
+		{
+			//if the data is available - fire the correct function
+			//when a specified button on the remote controller is pressed
+			if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) 
+			{
+				try 
+				{
 					serialinput=input.readLine();
 					System.out.println(serialinput);
 					
@@ -180,38 +207,45 @@ public class JumbotronAR
 					{
 						toggleHorn(); 
 					}
-					
-					
-				} catch (Exception e) {
+						
+				} 
+				catch (Exception e) 
+				{
 					System.err.println(e.toString());
 				}
 			}
 		}
 		
+		/**
+		 * Pause the timer
+		 */
 		public void pause() 
 		{
 			twoSecondTimer.pause();
 		}
 
+		/**
+		 * This mutes/unmutes the horn. 
+		 * isClicked default = false
+		 */
 		private void toggleHorn() 
 		{
 			 if(!isClicked)
 			   {
 			         isClicked = true;
 					   toronto = "src/tgh.wav"; 
-						tampa = "src/tbgh.wav"; 
-						eop = "src/nhl_eop.wav"; 
-			         
+						tampa = "src/tbgh.wav";     
 			   }
 			   else 
 			   {
-					toronto = ""; 
-					tampa = ""; 
-					eop = ""; 
+					toronto = "src/silence.wav"; 
+					tampa = "src/silence.wav"; 
 			   }
-			
 		}
 		
+		/**
+		 * Reset the timer only. 
+		 */
 		public void reset()
 		{
 			twoSecondTimer.cancel();
@@ -219,6 +253,9 @@ public class JumbotronAR
 			timer1.setText("00 : 00"); 
 		}
 
+		/**
+		 * Reset the score only. 
+		 */
 		private void resetScore() 
 		{
 			scoreGuest.setText("0");
@@ -228,13 +265,11 @@ public class JumbotronAR
 		private void decreaseGuest() 
 		{
 			decrementGuestScore(); 
-			
 		}
 
 		private void increaseGuest() 
 		{
 			incrementGuestScore(); 
-			
 		}
 
 		private void decreaseHome() 
@@ -247,6 +282,10 @@ public class JumbotronAR
 			incrementHomeScore(); 
 		}
 
+		/**
+		 * Start the timer. If the timer is less then/equal to zero
+		 * don't start it. 
+		 */
 		private void start() 
 		{
 			if(twoSecondTimer.duration <= 0)
@@ -257,7 +296,6 @@ public class JumbotronAR
 			{
 				twoSecondTimer.start();
 			}
-			
 		}
 
 		private void decrementOneSec() 
@@ -275,7 +313,6 @@ public class JumbotronAR
 			twoSecondTimer.pause();
 			twoSecondTimer.duration += 1000; 
 			timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
-			
 		}
 
 		private void decrementOneMin() 
@@ -285,8 +322,7 @@ public class JumbotronAR
 				twoSecondTimer.pause();
 				twoSecondTimer.duration -= 60000; 
 				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
-			}
-			
+			}	
 		}
 
 		private void incrementOneMin() 
@@ -294,73 +330,80 @@ public class JumbotronAR
 			twoSecondTimer.pause();
 			twoSecondTimer.duration += 60000; 
 			timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime())); 
-			
 		}
-	 
 	}
 
+	//create the JFrame
 	private JFrame frame;
 	long lastUpdate;
 	long interval = 1000; 
 	long d = 0; 
 	//This creates a default timer which ticks every 1 seconds, and runs for 20 minutes.
-		Timer1 twoSecondTimer = new ExampleTimer(interval, d);
-		
+	Timer1 twoSecondTimer = new ExampleTimer(interval, d);
+	//the wav file strings are initially not set
 	String toronto = ""; 
 	String tampa = ""; 
+	//end of period horn will always be set and never mutable
 	String eop = "src/nhl_eop.wav"; 
+	//isClicked is false by default
 	boolean isClicked = false;
-	
-     JLabel timer1 = new JLabel("00 : 00");
-		JLabel scoreHome = new JLabel("0");
-		JLabel scoreGuest = new JLabel("0"); 
-		private final JMenuBar menuBar = new JMenuBar();
-		private final JButton btnNewButton = new JButton("Increment Home");
-		private final JButton btnNewButton_1 = new JButton("Decrement Home");
-		private final JButton btnNewButton_2 = new JButton("Increment Guest");
-		private final JButton btnDecrementGuest = new JButton("Decrement Guest");
-		private final JButton btnReset = new JButton("Reset Scores");
-		private final JButton btnStartTimer = new JButton("Start Timer");
-		private final JButton btnPauseTimer = new JButton("Pause Timer");
-		private final JButton btnResetTimer = new JButton("Reset Timer");
-		private final JButton btnmin = new JButton("+1min");
-		private final JButton btnmin_1 = new JButton("-1min");
-		private final JButton btnsec = new JButton("+5sec");
-		private final JButton btnsec_1 = new JButton("-5sec");
-		private final JButton btnMuteunmute = new JButton("Mute/Unmute");
-		private final JButton btnExit = new JButton("Exit");
+	//Jlabels for GUI
+    JLabel timer1 = new JLabel("00 : 00");
+	JLabel scoreHome = new JLabel("0");
+	JLabel scoreGuest = new JLabel("0"); 
+	//auto-generated code 
+	private final JMenuBar menuBar = new JMenuBar();
+	private final JButton btnNewButton = new JButton("Increment Home");
+	private final JButton btnNewButton_1 = new JButton("Decrement Home");
+	private final JButton btnNewButton_2 = new JButton("Increment Guest");
+	private final JButton btnDecrementGuest = new JButton("Decrement Guest");
+	private final JButton btnReset = new JButton("Reset Scores");
+	private final JButton btnStartTimer = new JButton("Start Timer");
+	private final JButton btnPauseTimer = new JButton("Pause Timer");
+	private final JButton btnResetTimer = new JButton("Reset Timer");
+	private final JButton btnmin = new JButton("+1min");
+	private final JButton btnmin_1 = new JButton("-1min");
+	private final JButton btnsec = new JButton("+5sec");
+	private final JButton btnsec_1 = new JButton("-5sec");
+	private final JButton btnMuteunmute = new JButton("Mute/Unmute");
+	private final JButton btnExit = new JButton("Exit");
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) 
 	{
-		EventQueue.invokeLater(new Runnable() {
+		EventQueue.invokeLater(new Runnable() 
+		{
 			@SuppressWarnings("deprecation")
-			public void run() {
-				try {
+			//run a new thread for the GUI
+			public void run() 
+			{
+				try 
+				{
+					System.out.println("Started: Initializing GUI");
 					JumbotronAR window = new JumbotronAR();
 					JumbotronAR.serialinput main = window.new serialinput(); 
 					
-					
 					window.menuBar.hide();
 					main.initialize();
-				      GraphicsEnvironment graphics =
-				    	      GraphicsEnvironment.getLocalGraphicsEnvironment();
-				    	      GraphicsDevice device = graphics.getDefaultScreenDevice();
+				    GraphicsEnvironment graphics =
+				    GraphicsEnvironment.getLocalGraphicsEnvironment();
+				    GraphicsDevice device = graphics.getDefaultScreenDevice();
 				    	      
 				    window.frame.setVisible(true);
 				    window.frame.setResizable(true);
 				    device.setFullScreenWindow(window.frame);
-					
-					Thread t=new Thread() {
-						public void run() {
-							//the following line will keep this app alive for 1000 seconds,
+					//run a new thread for the serial input
+					Thread t=new Thread() 
+					{
+						public void run() 
+						{
+							//the following line will keep this app alive for x seconds,
 							//waiting for events to occur and responding to them (printing incoming messages to console).
 							try 
 							{
 								Thread.sleep(1000000);
 								System.out.println(main.serialinput + "From jumbotron"); 
-								
 							} 
 							catch (InterruptedException ie) 
 							{
@@ -369,19 +412,15 @@ public class JumbotronAR
 						}
 					};
 					t.start();
-					System.out.println("Started");
+					System.out.println("Started: Capturing Serial Input");
 					
-					
-					
-				} catch (Exception e) {
+				} catch (Exception e) 
+				{
 					e.printStackTrace(); 
 				}
 			}
 		});
-		
 	}
-
-
 
 	/**
 	 * Create the application.
@@ -390,8 +429,6 @@ public class JumbotronAR
 	{
 		twoSecondTimer.duration =  0;
 		initialize();
-		
-	    
 	}	
 	
 	//increment guest score 
@@ -467,7 +504,6 @@ public class JumbotronAR
 						System.out.println("Error playing sound. (Tampa)");
 					}
 			}
-			
 			score1 = Integer.parseInt(score); 
 			score1++; 
 			score= String.valueOf(score1); 
@@ -502,6 +538,7 @@ public class JumbotronAR
 	
 	/**
 	 * Initialize the contents of the frame.
+	 * auto-generated code 
 	 */
 	private void initialize() 
 	{
@@ -626,7 +663,6 @@ public class JumbotronAR
 			}
 		});
 		
-
 		//start the clock
 		menuBar.add(btnStartTimer);
 		btnStartTimer.addActionListener(new ActionListener() {
@@ -673,7 +709,6 @@ public class JumbotronAR
 				twoSecondTimer.pause();
 				twoSecondTimer.duration += 60000; 
 				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime())); 
-				
 			}
 		});
 		btnmin_1.addActionListener(new ActionListener() {
@@ -687,14 +722,12 @@ public class JumbotronAR
 				}
 			}
 		});
-		
 		//increment and decrement 5 seconds: 
 		menuBar.add(btnsec_1);
 		menuBar.add(btnsec);
 		btnsec.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-
 				twoSecondTimer.pause();
 				twoSecondTimer.duration += 1000; 
 				timer1.setText(twoSecondTimer.currentTime(twoSecondTimer.getRemainingTime()));
@@ -718,21 +751,6 @@ public class JumbotronAR
 		btnMuteunmute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				
-				   if(!isClicked)
-				   {
-				         isClicked = true;
-						   toronto = "src/tgh.wav"; 
-							tampa = "src/tbgh.wav"; 
-							eop = "src/nhl_eop.wav"; 
-				         
-				   }
-				   else 
-				   {
-						toronto = ""; 
-						tampa = ""; 
-						eop = ""; 
-				   }
 			}
 		});
 		
@@ -745,12 +763,10 @@ public class JumbotronAR
 			}
 		});
 		
-	
-			
 	}
+	
 	public class ExampleTimer extends Timer1
 	{
-		
 		public ExampleTimer() 
 		{
 			super();
@@ -811,12 +827,8 @@ public class JumbotronAR
 			twoSecondTimer.cancel();
 			twoSecondTimer.duration = 0; 
 			timer1.setText("00 : 00"); 
-			System.out.println("done"); 
-		
-			
+			System.out.println("done"); 			
 		}
 	}
-	 
-	
 }
-
+//end of class JumbotronAR.java

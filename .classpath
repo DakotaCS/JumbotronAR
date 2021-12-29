@@ -6,6 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/home/ben/eclipse-workspace/JumbotronAR/lib/RXTXcomm.jar"/>
+	<classpathentry kind="lib" path="/home/dakota/Desktop/GIT_Local/JumbotronAR/lib/RXTXcomm.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
