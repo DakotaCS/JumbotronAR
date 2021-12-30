@@ -458,7 +458,6 @@ public class JumbotronAR
 					clip.open(audioInputStream);
 					clip.start();
 					audioInputStream.close();
-					clip.close();
 				
 				} 
 				catch(Exception ex) 
@@ -514,7 +513,6 @@ public class JumbotronAR
 						clip.open(audioInputStream);
 						clip.start();
 						audioInputStream.close();
-						clip.close();
 					} 
 					catch(Exception ex) 
 					{
@@ -890,7 +888,6 @@ public class JumbotronAR
 				clip.open(audioInputStream);
 				clip.start();
 				audioInputStream.close();
-				clip.close(); 
 			} 
 			catch(Exception ex) 
 			{
