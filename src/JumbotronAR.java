@@ -236,13 +236,13 @@ public class JumbotronAR
 		 */
 		private void toggleHorn() 
 		{
-			 if(!isClicked)
+			 	if(!isClicked)
 			   {
 			         isClicked = true;
 					   toronto = "src/tgh.wav"; 
 						tampa = "src/tbgh.wav";     
 			   }
-			   else 
+			   else if(isClicked)
 			   {
 				   isClicked = false;
 					toronto = "src/silence.wav"; 
@@ -457,6 +457,9 @@ public class JumbotronAR
 					Clip clip = AudioSystem.getClip();
 					clip.open(audioInputStream);
 					clip.start();
+					audioInputStream.close();
+					clip.close();
+				
 				} 
 				catch(Exception ex) 
 				{
@@ -510,6 +513,8 @@ public class JumbotronAR
 						Clip clip = AudioSystem.getClip();
 						clip.open(audioInputStream);
 						clip.start();
+						audioInputStream.close();
+						clip.close();
 					} 
 					catch(Exception ex) 
 					{
@@ -884,6 +889,8 @@ public class JumbotronAR
 				Clip clip = AudioSystem.getClip();
 				clip.open(audioInputStream);
 				clip.start();
+				audioInputStream.close();
+				clip.close(); 
 			} 
 			catch(Exception ex) 
 			{
