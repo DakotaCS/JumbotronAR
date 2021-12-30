@@ -244,6 +244,7 @@ public class JumbotronAR
 			   }
 			   else 
 			   {
+				   isClicked = false;
 					toronto = "src/silence.wav"; 
 					tampa = "src/silence.wav"; 
 			   }
